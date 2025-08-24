@@ -317,6 +317,18 @@ window.addEventListener('error', (e) => {
 
 
 
+// 滚动到关于我们区域
+function scrollToAbout() {
+    const aboutSection = document.querySelector('#about');
+    if (aboutSection) {
+        const offsetTop = aboutSection.offsetTop - 80; // 考虑导航栏高度
+        window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+        });
+    }
+}
+
 // 初始化其他功能
 document.addEventListener('DOMContentLoaded', () => {
     initLazyLoading();

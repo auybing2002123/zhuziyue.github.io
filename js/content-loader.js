@@ -22,8 +22,8 @@ class ContentLoader {
         console.log('开始加载内容...');
 
         // 检查配置是否已加载
-        if (typeof window.SITE_CONFIG === 'undefined' || typeof window.IMAGE_CONFIG === 'undefined') {
-            console.error('配置文件未正确加载，请检查config.js文件');
+        if ((typeof window.SITE_TEXT_CONFIG === 'undefined' && typeof window.SITE_CONFIG === 'undefined') || typeof window.IMAGE_CONFIG === 'undefined') {
+            console.error('配置文件未正确加载，请检查text-config.js和config.js文件');
             return;
         }
 
@@ -174,14 +174,24 @@ class ContentLoader {
         const currentContent = this.exportCurrentContent();
         const currentModeConfig = window.ConfigManager ? window.ConfigManager.getModeConfig() : { mode: 'static', showToolbar: true, allowModeSwitch: true };
 
-        let configContent = `// 网站内容配置文件\n`;
-        configContent += `// 这个文件包含所有可编辑的文本内容和图片路径配置\n\n`;
+        // 生成text-config.js文件内容
+        let textConfigContent = `// 网站文本内容配置文件\n`;
+        textConfigContent += `// 这个文件包含所有可编辑的文本内容\n\n`;
+        textConfigContent += `window.SITE_TEXT_CONFIG = ${JSON.stringify(currentContent.text, null, 4)};\n`;
+
+        // 生成config.js文件内容
+        let configContent = `// 网站配置文件\n`;
+        configContent += `// 这个文件包含模式配置和图片路径配置\n\n`;
 
         // 添加模式配置
         configContent += `// 网站模式配置\n`;
         configContent += `window.SITE_MODE_CONFIG = ${JSON.stringify(currentModeConfig, null, 4)};\n\n`;
 
-        configContent += `window.SITE_CONFIG = ${JSON.stringify(currentContent.text, null, 4)};\n\n`;
+        // 文本内容配置（从独立文件加载）
+        configContent += `// 文本内容配置（从独立文件加载）\n`;
+        configContent += `window.SITE_CONFIG = window.SITE_TEXT_CONFIG || {};\n\n`;
+
+        configContent += `// 图片路径配置\n`;
         configContent += `window.IMAGE_CONFIG = ${JSON.stringify(currentContent.images, null, 4)};\n\n`;
 
         // 添加完整的ConfigManager
@@ -195,25 +205,45 @@ class ContentLoader {
         configContent += `    getImage: function(key) { return window.IMAGE_CONFIG[key] || ''; },\n`;
         configContent += `    setText: function(key, value) { window.SITE_CONFIG[key] = value; },\n`;
         configContent += `    setImage: function(key, value) { window.IMAGE_CONFIG[key] = value; },\n`;
-        configContent += `    exportConfig: function() { return { mode: window.SITE_MODE_CONFIG, text: window.SITE_CONFIG, images: window.IMAGE_CONFIG }; }\n`;
+        configContent += `    exportConfig: function() { return { mode: window.SITE_MODE_CONFIG, text: window.SITE_TEXT_CONFIG || window.SITE_CONFIG, images: window.IMAGE_CONFIG }; }\n`;
         configContent += `};`;
 
-        return configContent;
+        // 返回两个文件的内容
+        return {
+            textConfig: textConfigContent,
+            mainConfig: configContent
+        };
     }
 
     // 下载配置文件
     downloadConfigFile() {
-        const configContent = this.generateConfigFile();
-        const blob = new Blob([configContent], { type: 'text/javascript' });
-        const url = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'config.js';
-        link.click();
-        
-        URL.revokeObjectURL(url);
-        console.log('配置文件已下载');
+        const configFiles = this.generateConfigFile();
+
+        // 下载text-config.js
+        const textBlob = new Blob([configFiles.textConfig], { type: 'text/javascript' });
+        const textUrl = URL.createObjectURL(textBlob);
+
+        const textLink = document.createElement('a');
+        textLink.href = textUrl;
+        textLink.download = 'text-config.js';
+        textLink.click();
+
+        URL.revokeObjectURL(textUrl);
+
+        // 延迟下载config.js，避免同时下载
+        setTimeout(() => {
+            const configBlob = new Blob([configFiles.mainConfig], { type: 'text/javascript' });
+            const configUrl = URL.createObjectURL(configBlob);
+
+            const configLink = document.createElement('a');
+            configLink.href = configUrl;
+            configLink.download = 'config.js';
+            configLink.click();
+
+            URL.revokeObjectURL(configUrl);
+        }, 500);
+
+        console.log('配置文件已下载（text-config.js 和 config.js）');
     }
 }
 

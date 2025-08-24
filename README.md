@@ -73,8 +73,8 @@
 ### 内容更新（推荐方式）
 
 #### 更新文本内容
-1. 打开 `js/config.js` 文件
-2. 在 `SITE_CONFIG` 对象中找到要修改的内容
+1. 打开 `js/text-config.js` 文件
+2. 在 `SITE_TEXT_CONFIG` 对象中找到要修改的内容
 3. 直接修改文本内容
 4. 保存文件并刷新页面
 
@@ -140,7 +140,8 @@
 │   ├── editor.css             # 编辑器样式
 │   └── images.css             # 图片相关样式
 ├── js/
-│   ├── config.js              # 内容配置文件（重要）
+│   ├── text-config.js         # 文本内容配置文件（重要）
+│   ├── config.js              # 主配置文件（模式和图片配置）
 │   ├── content-loader.js      # 内容加载器
 │   ├── main.js                # 主要功能
 │   ├── editor.js              # 编辑器功能

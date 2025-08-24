@@ -52,14 +52,14 @@ window.SITE_MODE_CONFIG = {
 
 ### 更新文本内容
 
-1. 打开 `js/config.js` 文件
-2. 找到 `window.SITE_CONFIG` 对象
+1. 打开 `js/text-config.js` 文件
+2. 找到 `window.SITE_TEXT_CONFIG` 对象
 3. 修改对应的文本内容
 4. 保存文件并刷新页面
 
 **示例：**
 ```javascript
-window.SITE_CONFIG = {
+window.SITE_TEXT_CONFIG = {
     'hero-slide-1-title': '如果我们不曾相遇',  // 修改这里
     'hero-slide-1-subtitle': '你又会在哪里',   // 修改这里
     // ... 其他内容
