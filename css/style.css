@@ -428,6 +428,52 @@ body {
     color: #555;
 }
 
+/* 怎么能这么漂亮 */
+.beauty-section {
+    background: #f8f9fa;
+}
+
+.beauty-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.beauty-item {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.beauty-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.beauty-image {
+    width: 100%;
+    height: 300px;
+    background: linear-gradient(45deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
+}
+
+.beauty-caption {
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    background: white;
+}
+
 /* 未来展望网格 */
 .future-section {
     background: #f8f9fa;
@@ -565,25 +611,85 @@ body {
 
 /* 底部样式 */
 .footer {
-    background: #2c3e50;
+    position: relative;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 60px 0 30px;
+    padding: 4rem 0 2rem;
+    text-align: left;
+    min-height: 400px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.footer-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.4) 0%,
+        rgba(0, 0, 0, 0.6) 50%,
+        rgba(0, 0, 0, 0.4) 100%
+    );
+    z-index: 1;
+}
+
+.footer .container {
+    position: relative;
+    z-index: 2;
 }
 
 .footer-content {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    margin-bottom: 3rem;
 }
 
-.footer-section h3 {
-    margin-bottom: 1rem;
-    color: #ecf0f1;
+.footer-section {
+    padding: 0 1rem;
 }
 
-.footer-section p {
-    color: #bdc3c7;
-    line-height: 1.6;
+.footer-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+    color: #ffffff;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 0.5rem;
+}
+
+.footer-text {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.7;
+    font-size: 0.95rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 2rem;
+    text-align: center;
+}
+
+.footer-copyright {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-copyright p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.footer-subtitle {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
 }
 
 /* 响应式设计 */
@@ -761,4 +867,92 @@ html {
 
 .glow:hover {
     box-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+}
+
+/* 底部区域响应式设计 */
+@media (max-width: 768px) {
+    .footer {
+        padding: 3rem 0 1.5rem;
+        min-height: 300px;
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section {
+        padding: 0;
+        text-align: center;
+    }
+
+    .footer-title {
+        font-size: 1.2rem;
+    }
+
+    .footer-text {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: 2rem 0 1rem;
+        min-height: 250px;
+    }
+
+    .footer-content {
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .footer-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    .footer-text {
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+
+    .footer-copyright p {
+        font-size: 0.8rem;
+    }
+
+    .footer-subtitle {
+        font-size: 0.75rem;
+    }
+
+    /* 怎么能这么漂亮区域响应式 */
+    .beauty-gallery {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .beauty-image {
+        height: 250px;
+    }
+
+    .beauty-caption {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .beauty-gallery {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .beauty-image {
+        height: 200px;
+    }
+
+    .beauty-caption {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+    }
 }

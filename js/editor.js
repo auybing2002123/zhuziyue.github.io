@@ -5,16 +5,58 @@ class ContentEditor {
         this.currentElement = null;
         this.originalContent = '';
         this.data = {};
-        this.editMode = true; // 默认编辑模式
+        this.editMode = false; // 将在init中根据配置设置
         this.toolbarVisible = true; // 工具栏可见性
+        this.staticMode = true; // 静态模式标志，将在init中根据配置设置
+        this.configMode = 'static'; // 配置文件中设置的模式
         this.init();
     }
 
     init() {
-        this.loadData();
+        // 从配置文件读取模式设置
+        this.readModeFromConfig();
+
+        // 根据配置模式决定是否加载localStorage数据
+        if (!this.staticMode) {
+            this.loadData();
+        }
+
         this.bindEvents();
         this.setupToolbar();
-        this.showEditHints();
+        this.updateModeDisplay();
+
+        // 只在编辑模式下显示编辑提示
+        if (this.editMode) {
+            this.showEditHints();
+        }
+    }
+
+    // 从配置文件读取模式设置
+    readModeFromConfig() {
+        if (window.ConfigManager) {
+            this.configMode = window.ConfigManager.getMode();
+            this.staticMode = (this.configMode === 'static');
+            this.editMode = (this.configMode === 'editable');
+
+            console.log(`编辑器模式设置: ${this.configMode}, staticMode: ${this.staticMode}, editMode: ${this.editMode}`);
+        }
+    }
+
+    // 由内容加载器调用，设置模式
+    setModeFromConfig(mode) {
+        this.configMode = mode;
+        this.staticMode = (mode === 'static');
+        this.editMode = (mode === 'editable');
+        this.updateModeDisplay();
+
+        // 根据模式显示或隐藏编辑提示和设置图片编辑器
+        if (this.editMode) {
+            this.showEditHints();
+            this.setupImageEditors();
+        } else {
+            this.hideEditHints();
+            this.removeImageEditors();
+        }
     }
 
     // 加载保存的数据
@@ -63,10 +105,12 @@ class ContentEditor {
             });
         });
 
-        // 图片编辑事件
-        document.querySelectorAll('.editable-image').forEach(element => {
-            this.setupImageEditor(element);
-        });
+        // 图片编辑事件 - 只在编辑模式下设置
+        if (this.editMode) {
+            document.querySelectorAll('.editable-image').forEach(element => {
+                this.setupImageEditor(element);
+            });
+        }
 
         // 全局点击事件
         document.addEventListener('click', (e) => {
@@ -195,6 +239,11 @@ class ContentEditor {
 
     // 设置图片编辑器
     setupImageEditor(element) {
+        // 避免重复添加
+        if (element.querySelector('.image-upload-overlay')) {
+            return;
+        }
+
         const overlay = document.createElement('div');
         overlay.className = 'image-upload-overlay';
         overlay.innerHTML = `
@@ -336,11 +385,20 @@ class ContentEditor {
 
     // 设置工具栏
     setupToolbar() {
+        const toolbar = document.getElementById('edit-toolbar');
         const saveBtn = document.getElementById('save-btn');
         const resetBtn = document.getElementById('reset-btn');
         const exportBtn = document.getElementById('export-btn');
         const toggleModeBtn = document.getElementById('toggle-mode-btn');
         const toggleToolbarBtn = document.getElementById('toggle-toolbar-btn');
+
+        // 根据配置决定是否显示工具栏
+        if (window.ConfigManager && !window.ConfigManager.shouldShowToolbar()) {
+            if (toolbar) {
+                toolbar.style.display = 'none';
+            }
+            return; // 如果不应该显示工具栏，直接返回
+        }
 
         saveBtn.addEventListener('click', () => {
             this.saveToFile();
@@ -354,12 +412,31 @@ class ContentEditor {
             this.exportContent();
         });
 
+        // 添加配置导出按钮功能
+        const configExportBtn = document.getElementById('config-export-btn');
+        if (configExportBtn) {
+            configExportBtn.addEventListener('click', () => {
+                if (window.downloadConfig) {
+                    window.downloadConfig();
+                    this.showSaveIndicator('配置文件已导出');
+                }
+            });
+        }
+
         // 添加存储信息显示
         this.updateStorageInfo();
 
-        toggleModeBtn.addEventListener('click', () => {
-            this.toggleEditMode();
-        });
+        // 只有在允许模式切换时才绑定事件
+        if (toggleModeBtn) {
+            if (window.ConfigManager && window.ConfigManager.allowModeSwitch()) {
+                toggleModeBtn.addEventListener('click', () => {
+                    this.toggleEditMode();
+                });
+            } else {
+                // 如果不允许切换模式，隐藏按钮或禁用
+                toggleModeBtn.style.display = 'none';
+            }
+        }
 
         toggleToolbarBtn.addEventListener('click', () => {
             this.toggleToolbar();
@@ -377,6 +454,30 @@ class ContentEditor {
     // 切换编辑模式
     toggleEditMode() {
         this.editMode = !this.editMode;
+
+        // 如果切换到编辑模式，需要从localStorage加载数据
+        if (this.editMode && this.staticMode) {
+            this.staticMode = false;
+            this.loadData();
+            this.applyData();
+            // 设置图片编辑器和编辑提示
+            this.setupImageEditors();
+            this.showEditHints();
+            // 切换到编辑内容模式
+            if (window.contentLoader) {
+                window.contentLoader.switchToEditMode();
+            }
+        } else if (!this.editMode) {
+            // 切换到静态模式
+            this.staticMode = true;
+            // 移除图片编辑器和编辑提示
+            this.removeImageEditors();
+            this.hideEditHints();
+            if (window.contentLoader) {
+                window.contentLoader.switchToStaticMode();
+            }
+        }
+
         this.updateModeDisplay();
 
         if (!this.editMode && this.isEditing) {
@@ -390,11 +491,15 @@ class ContentEditor {
         const toggleBtn = document.getElementById('toggle-mode-btn');
         const editElements = document.querySelectorAll('.editable-text, .editable-image');
 
+        // 清除所有模式类
+        body.classList.remove('editing-mode', 'display-mode', 'static-mode');
+
         if (this.editMode) {
             body.classList.add('editing-mode');
-            body.classList.remove('display-mode');
-            toggleBtn.innerHTML = '👁️ 展示模式';
-            toggleBtn.title = '切换到展示模式';
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '📁 静态模式';
+                toggleBtn.title = '切换到静态内容模式';
+            }
 
             // 显示编辑提示
             editElements.forEach(element => {
@@ -405,10 +510,20 @@ class ContentEditor {
                 }
             });
         } else {
-            body.classList.remove('editing-mode');
-            body.classList.add('display-mode');
-            toggleBtn.innerHTML = '✏️ 编辑模式';
-            toggleBtn.title = '切换到编辑模式';
+            // 静态模式或展示模式
+            if (this.staticMode) {
+                body.classList.add('static-mode');
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = '✏️ 编辑模式';
+                    toggleBtn.title = '切换到编辑模式（使用localStorage）';
+                }
+            } else {
+                body.classList.add('display-mode');
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = '👁️ 展示模式';
+                    toggleBtn.title = '切换到展示模式';
+                }
+            }
 
             // 隐藏编辑提示
             editElements.forEach(element => {
@@ -526,11 +641,40 @@ class ContentEditor {
     // 显示编辑提示
     showEditHints() {
         document.querySelectorAll('.editable-text, .editable-image').forEach(element => {
+            // 避免重复添加提示
+            if (element.querySelector('.edit-hint')) {
+                return;
+            }
+
             const hint = document.createElement('div');
             hint.className = 'edit-hint';
             hint.textContent = element.classList.contains('editable-image') ? '点击上传图片' : '双击编辑文本';
             element.style.position = 'relative';
             element.appendChild(hint);
+        });
+    }
+
+    // 隐藏编辑提示
+    hideEditHints() {
+        document.querySelectorAll('.edit-hint').forEach(hint => {
+            hint.remove();
+        });
+    }
+
+    // 设置所有图片编辑器
+    setupImageEditors() {
+        document.querySelectorAll('.editable-image').forEach(element => {
+            this.setupImageEditor(element);
+        });
+    }
+
+    // 移除所有图片编辑器
+    removeImageEditors() {
+        document.querySelectorAll('.image-upload-overlay').forEach(overlay => {
+            overlay.remove();
+        });
+        document.querySelectorAll('.image-upload-input').forEach(input => {
+            input.remove();
         });
     }
 }
@@ -539,5 +683,5 @@ class ContentEditor {
 let editor;
 document.addEventListener('DOMContentLoaded', () => {
     editor = new ContentEditor();
-    document.body.classList.add('editing-mode');
+    // 不在这里设置body类，让编辑器根据配置自动设置
 });

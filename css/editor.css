@@ -2,12 +2,40 @@
 .editable-text,
 .editable-image {
     position: relative;
-    cursor: pointer;
     transition: all 0.3s ease;
 }
 
-.editable-text:hover,
-.editable-image:hover {
+/* 只在编辑模式下显示指针光标和悬停效果 */
+.editing-mode .editable-text,
+.editing-mode .editable-image {
+    cursor: pointer;
+}
+
+/* 静态模式下隐藏所有编辑相关的样式 */
+.static-mode .editable-text,
+.static-mode .editable-image {
+    cursor: default;
+}
+
+.static-mode .editable-text:hover,
+.static-mode .editable-image:hover {
+    background-color: transparent;
+    border-radius: 0;
+    outline: none;
+}
+
+/* 静态模式下隐藏编辑提示和上传元素 */
+.static-mode .image-upload-input {
+    display: none;
+}
+
+.static-mode .edit-hint {
+    display: none !important;
+}
+
+/* 只在编辑模式下显示悬停效果 */
+.editing-mode .editable-text:hover,
+.editing-mode .editable-image:hover {
     background-color: rgba(52, 152, 219, 0.1);
     border-radius: 4px;
     outline: 2px dashed #3498db;
@@ -71,8 +99,20 @@
     cursor: pointer;
 }
 
-.image-editor:hover .image-upload-overlay {
+/* 只在编辑模式下显示图片上传覆盖层 */
+.editing-mode .image-editor:hover .image-upload-overlay {
     opacity: 1;
+}
+
+/* 静态模式下隐藏图片上传覆盖层和提示 */
+.static-mode .image-upload-overlay {
+    display: none !important;
+}
+
+.static-mode .image-upload-hint {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
 }
 
 .image-upload-text {
