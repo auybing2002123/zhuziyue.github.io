@@ -1,0 +1,53 @@
+# GitHub Pages 配置文件
+
+# 网站基本信息
+title: "送给亲子的时光"
+description: "一个可编辑的亲子时光静态网站，支持实时编辑和本地保存"
+url: "https://yourusername.github.io"
+baseurl: "/your-repo-name"
+
+# 构建设置
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+
+# 插件
+plugins:
+  - jekyll-sitemap
+  - jekyll-feed
+
+# 排除文件
+exclude:
+  - README.md
+  - package.json
+  - package-lock.json
+  - node_modules/
+  - .github/
+  - .gitignore
+
+# 包含文件
+include:
+  - _pages
+
+# 默认设置
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+
+# SEO 设置
+lang: zh-CN
+author: "Your Name"
+
+# 社交媒体
+social:
+  name: "Your Name"
+  links:
+    - "https://github.com/yourusername"
+
+# Google Analytics (可选)
+# google_analytics: "UA-XXXXXXXX-X"
+
+# 网站图标
+favicon: "/favicon.ico"
